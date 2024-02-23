@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const User = require('../model/User');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 exports.registerUser = async (req, res, next) => {
 
@@ -33,6 +34,61 @@ exports.registerUser = async (req, res, next) => {
         })
 
     } catch (err) {
+        res.status(500).json({
+            status: 'error',
+            message: "Something went wrong !!"
+        })
+    }
+}
+
+const generateRefreshToken = async (req, res, next) => {
+    return crypto.randomBytes(10).toString('hex');
+}
+
+exports.loginUser = async (req, res, next) => {
+
+    try {
+
+        const { email, password } = req.body;
+        const existing_user = await User.findOne({ email })
+
+        if (!existing_user) {
+            return res.status(400).json({
+                status: "error",
+                message: 'User does not exist'
+            })
+        }
+
+        const passwordCompare = await bcrypt.compare(existing_user.password, password);
+        if (!passwordCompare) {
+            return res.status(400).json({
+                status: "error",
+                message: 'Invalid credentials'
+            })
+        }
+
+        const accessToken = jwt.sign(
+            { id: existing_user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        )
+        const refreshToken = generateRefreshToken();
+        existing_user.refreshToken = refreshToken;
+        const saved_token_response = await existing_user.save();
+        console.log(saved_token_response);
+
+        res.cookie('accessToken',accessToken, {httpOnly: true})
+        res.cookie('refreshToken',refreshToken, {httpOnly: true})
+
+        res.status(200).json({
+            status:'success',
+            message:'User created successfully',
+            accessToken: accessToken
+        })
+
+
+
+    }catch (err) {
         res.status(500).json({
             status: 'error',
             message: "Something went wrong !!"
