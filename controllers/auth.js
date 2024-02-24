@@ -8,16 +8,12 @@ exports.registerUser = async (req, res, next) => {
     try {
 
         const { fullName, email, password, userName, phone, role } = req.body;
-        
-
         const existingUser = await User.findOne({ userName })
     
-
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' })
         }
         
-
         const salt = await bcrypt.genSalt(10);
         const securePassword = await bcrypt.hash(password, salt);
 
@@ -63,7 +59,6 @@ exports.loginUser = async (req, res, next) => {
             })
         }
       
-
         const passwordCompare = await bcrypt.compare(password, existing_user.password);
  
         if (!passwordCompare) {
@@ -73,33 +68,25 @@ exports.loginUser = async (req, res, next) => {
             })
         }
       
-
         const accessToken = jwt.sign(
             { id: existing_user._id },
             process.env.SECRET_KEY,
             { expiresIn: '24h' }
         )
        
-        const refreshToken = generateRefreshToken();
-        
+        const refreshToken = generateRefreshToken();  
         existing_user.refreshToken = refreshToken;
-        
         const saved_token_response = await existing_user.save();
-       
         console.log(saved_token_response);
 
         res.cookie('accessToken',accessToken, {httpOnly: true})
-        console.log('COOKIE_ACCESS_TOKE',res.cookie);
         res.cookie('refreshToken',refreshToken, {httpOnly: true})
-        console.log('COOKIE_REFRESH_TOKEN',res.cookie);
 
         res.status(200).json({
             status:'success',
             message:'User logged in successfully',
             accessToken: accessToken
         })
-
-
 
     }catch (err) {
         res.status(500).json({
