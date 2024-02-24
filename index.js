@@ -15,6 +15,7 @@ app.get('/',  (req,res) => {
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use('/cabzen',require('./routes/routes'));
 
 app.use(
     cors({

@@ -8,12 +8,15 @@ exports.registerUser = async (req, res, next) => {
     try {
 
         const { fullName, email, password, userName, phone, role } = req.body;
+        
 
-        const existingUser = User.findOne({ userName })
+        const existingUser = await User.findOne({ userName })
+    
 
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' })
         }
+        
 
         const salt = await bcrypt.genSalt(10);
         const securePassword = await bcrypt.hash(password, salt);
@@ -51,6 +54,7 @@ exports.loginUser = async (req, res, next) => {
 
         const { email, password } = req.body;
         const existing_user = await User.findOne({ email })
+       
 
         if (!existing_user) {
             return res.status(400).json({
@@ -58,31 +62,40 @@ exports.loginUser = async (req, res, next) => {
                 message: 'User does not exist'
             })
         }
+      
 
-        const passwordCompare = await bcrypt.compare(existing_user.password, password);
+        const passwordCompare = await bcrypt.compare(password, existing_user.password);
+ 
         if (!passwordCompare) {
             return res.status(400).json({
                 status: "error",
                 message: 'Invalid credentials'
             })
         }
+      
 
         const accessToken = jwt.sign(
             { id: existing_user._id },
-            process.env.JWT_SECRET,
+            process.env.SECRET_KEY,
             { expiresIn: '24h' }
         )
+       
         const refreshToken = generateRefreshToken();
+        
         existing_user.refreshToken = refreshToken;
+        
         const saved_token_response = await existing_user.save();
+       
         console.log(saved_token_response);
 
         res.cookie('accessToken',accessToken, {httpOnly: true})
+        console.log('COOKIE_ACCESS_TOKE',res.cookie);
         res.cookie('refreshToken',refreshToken, {httpOnly: true})
+        console.log('COOKIE_REFRESH_TOKEN',res.cookie);
 
         res.status(200).json({
             status:'success',
-            message:'User created successfully',
+            message:'User logged in successfully',
             accessToken: accessToken
         })
 
