@@ -1,6 +1,8 @@
 const User = require('../model/User');
 const bcrypt = require('bcrypt');
 const Brand = require('../model/Brands');
+const Cab = require('../model/Cab');
+const Booking = require('../model/Booking');
 
 exports.getAllUsers = async (req, res, next) => {
 
@@ -221,7 +223,7 @@ exports.updateBrand = async (req, res, next) => {
 
     try {
 
-        const {  name, description } = req.body;
+        const { name, description } = req.body;
 
         if (!name) {
             return res.status(400).json({
@@ -280,7 +282,7 @@ exports.deleteUserBrand = async (req, res) => {
             })
         }
 
-        if(!existingUser){
+        if (!existingUser) {
             res.status(404).json({
                 status: 'error',
                 message: 'User does not exist'
@@ -288,10 +290,209 @@ exports.deleteUserBrand = async (req, res) => {
         }
 
         await Brand.deleteOne({ _id: existingBrand._id });
-    } catch(err){
+    } catch (err) {
         res.status(500).json({
             status: 'error',
             message: 'Something went wrong'
         })
     }
 }
+
+exports.addCab = async (req, res, next) => {
+
+    try {
+
+        const { brand, driver, licensePlate, model, color } = req.body;
+
+        if (!brand || !driver || !licensePlate) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Brand, driver and license plate are required'
+            })
+        }
+
+        const existingCab = await Cab.findOne({ licensePlate });
+
+        if (existingCab) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Cab already exists'
+            })
+        }
+
+        const cab = await Cab.create({
+            brand,
+            driver,
+            licensePlate,
+            model,
+            color
+        })
+
+        res.status(200).json({
+            success: true,
+            message: 'Cab added successfully',
+            data: cab
+        })
+    } catch (err) {
+        res.status(500).json({
+            status: 'error',
+            message: 'Something went wrong'
+        })
+    }
+}
+
+exports.listAllCabse = async (req, res, next) => {
+
+    try {
+
+        const { page, limit = 10 } = req.body
+        const offset = (page - 1) * limit;
+
+        const cabs = await Cab.find({}).skip(offset).limit(limit);
+
+        res.status(200).json({
+            success: true,
+            message: 'Cab list fetched successfully',
+            data: cabs
+
+        })
+
+    } catch (err) {
+        res.status(500).json({
+            status: 'error',
+            message: 'Something went wrong'
+        })
+    }
+}
+
+exports.updateCab = async (req, res, next) => {
+
+    try {
+
+        const { id , driver , licensePlate, model, color, status} = req.body;
+
+        if (!id) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Insufficient params'
+            })
+        }
+
+        const existingCab = await Cab.findOne({ _id: id });
+
+        if (!existingCab) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Cab does not exist'
+            })
+        }
+
+        if (driver) existingCab.driver = driver;
+        if (licensePlate) existingCab.licensePlate = licensePlate;
+        if (model) existingCab.model = model;
+        if (color) existingCab.color = color;
+        if(status) existingCab.status = status;
+
+        const updatedCab = await existingCab.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Cab updated successfully',
+            data: updatedCab
+        })
+
+    } catch (err) {
+        res.status(500).json({
+            status: 'error',
+            message: 'Something went wrong'
+        })
+    }
+}
+
+exports.deleteCab = async (req, res, next) => {
+
+    try {
+        const { id , userName} = req.body;
+
+        if (!id || !userName) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Id is required'
+            })
+        }
+
+        const existingCab = await Cab.findById(id);
+        const existingUser = await User.findById(userName);
+
+        if (!existingCab) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Cab does not exist'
+            })
+        }
+
+        await Cab.deleteOne({ _id: existingCab._id });
+
+        res.status(200).json({
+            success: true,
+            message: 'Cab deleted successfully',
+        })
+
+    } catch (err) {
+        res.status(500).json({
+            status: 'error',
+            message: 'Something went wrong'
+        })
+    }
+}
+
+exports.bookedCabs = async ( req, res, next) => {
+
+    try {
+            
+            const { page, limit = 10 } = req.body
+            const offset = (page - 1) * limit;
+    
+            const cabs = await Cab.find({ status: 'booked'}).skip(offset).limit(limit);
+    
+            res.status(200).json({
+                success: true,
+                message: 'Booked cab list fetched successfully',
+                data: cabs
+    
+            })
+    } catch (err) {
+        res.status(500).json({
+            status: 'error',
+            message: 'Something went wrong'
+        })
+    }
+}
+
+exports.bookedCabByUser = async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+
+        const bookings = await Booking.find({ user: userId }).populate('Cab');
+
+        if (bookings.length === 0) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'User has not booked any cab',
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Booked cab details fetched successfully',
+            data: bookings,
+        });
+    } catch (err) {
+        console.error('Error fetching booked cab details:', err);
+        res.status(500).json({
+            status: 'error',
+            message: 'Something went wrong',
+        });
+    }
+};
+

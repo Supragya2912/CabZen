@@ -18,6 +18,11 @@ const cabSchema = new mongoose.Schema({
     },
     model: String,
     color: String,
+    status: {
+        type: String,
+        enum: ['booked', 'cancelled', 'active','inactive'],
+        default: 'inactive'
+    }
 })
 
 module.exports = mongoose.model('Cab', cabSchema);
