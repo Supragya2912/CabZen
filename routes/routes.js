@@ -11,6 +11,7 @@ router.post('/login',Auth.loginUser)
 router.post('/getAllUsers', Admin.getAllUsers)
 router.post('/addUser', Admin.addUser)
 router.post('/updateUser', Admin.updateUser)
+router.post('/deleteUser', Admin.deleteUser)
 
 
 module.exports = router;

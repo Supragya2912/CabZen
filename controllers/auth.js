@@ -13,6 +13,17 @@ exports.registerUser = async (req, res, next) => {
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' })
         }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: 'Invalid email address' });
+        }
+
+        
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(phone)) {
+            return res.status(400).json({ message: 'Invalid phone number' });
+        }
         
         const salt = await bcrypt.genSalt(10);
         const securePassword = await bcrypt.hash(password, salt);
