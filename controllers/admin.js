@@ -348,7 +348,7 @@ exports.listAllCabs = async (req, res, next) => {
 
         const cabs = await Cab.find({}).skip(offset).limit(limit);
         console.log(cabs);
-        
+
 
         res.status(200).json({
             success: true,
@@ -369,16 +369,16 @@ exports.updateCab = async (req, res, next) => {
 
     try {
 
-        const { id , driver , licensePlate, model, color, status} = req.body;
+        const { cabId , driver , licensePlate, model, color, status} = req.body;
 
-        if (!id) {
+        if (!cabId) {
             return res.status(400).json({
                 status: 'error',
                 message: 'Insufficient params'
             })
         }
 
-        const existingCab = await Cab.findOne({ _id: id });
+        const existingCab = await Cab.findOne({ _id: cabId });
 
         if (!existingCab) {
             return res.status(400).json({

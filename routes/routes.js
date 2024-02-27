@@ -37,10 +37,10 @@ router.post('/getOneBooking', Driver.getOneBooking)
 router.post('/cancelBooking', Driver.cancelBooking)
 
 //user routes
-router.post('/getUserData', User.getUserData)
-router.post('/bookCab', User.bookCab)
-router.post('/cancelBooking', User.cancelBooking)
-router.post('/history', User.getBookingHistoryByUser)
+router.post('/getUserData',Auth.protect, checkPermissions(["user"]) ,User.getUserData)
+router.post('/bookCab',  checkPermissions(["user"]),User.bookCab)
+router.post('/cancelBooking',  checkPermissions(["user"]),User.cancelBooking)
+router.post('/history', checkPermissions(["user"]), User.getBookingHistoryByUser)
 
 
 

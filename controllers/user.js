@@ -20,23 +20,36 @@ exports.getUserData = async (req, res, next) => {
 
 exports.bookCab = async (req, res, next) => {
 
-    const { userID, cabID, bookingDateTime, pickupLocation, destination, fare } = req.body;
+    const { userID, cabID,  pickupLocation, destination, fare } = req.body;
+    console.log(userID, cabID, pickupLocation, destination, fare);
 
     try {
+
         const user = await User.findById(userID);
+        console.log(user)
         if (!user) {
             return res.status(400).json({ message: 'User not found' })
         }
 
+        console.log("CROSS1")
+
         const cab = await Cab.findById(cabID);
+
+        console.log(cab)
 
         if (!cab || cab.status === 'booked' || cab.status === 'cancelled' || cab.status === 'inactive') {
             return res.status(400).json({ message: 'Cab not found' })
         }
+        console.log("CROSS2")
 
         if(pickupLocation === "" || destination === "" || fare === ""){
             return res.status(400).json({ message: 'Pickup Location, Destination and Fare are required' })
         }
+        console.log("CROSS3")
+
+        const bookingDateTime = new Date(); 
+
+        console.log("CROSS4")
 
         const booking = new Booking({
             userID,
@@ -46,8 +59,18 @@ exports.bookCab = async (req, res, next) => {
             destination,
             fare
         })
+
+        console.log("CROSS5")
+        await cab.findByIdAndUpdate(cabID, { status: 'booked' });
+
+        console.log("CROSS6")
         await booking.save();
-        return res.status(200).json(booking);
+        console.log("CROSS7")
+        return res.status(200).json({
+            message: 'Cab booked successfully',
+            data: booking
+        });
+        
     } catch (error) {
         return res.status(500).json({ message: error.message })
     }
