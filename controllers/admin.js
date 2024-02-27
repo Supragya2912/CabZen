@@ -341,7 +341,7 @@ exports.addCab = async (req, res, next) => {
     }
 }
 
-exports.listAllCabse = async (req, res, next) => {
+exports.listAllCabs = async (req, res, next) => {
 
     try {
 
