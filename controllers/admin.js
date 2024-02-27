@@ -159,16 +159,16 @@ exports.addBrand = async (req, res, next) => {
     try {
 
         const { name, description } = req.body;
-
+ 
         if (!name || !description) {
             return res.status(400).json({
                 status: 'error',
                 message: 'Name and description are required'
-            })
+            });
         }
 
-        const existingBrand = await Brand.findOne({ brandName })
-
+        const existingBrand = await Brand.findOne({ name })
+    
         if (existingBrand) {
             return res.status(400).json({
                 status: 'error',
@@ -228,7 +228,7 @@ exports.updateBrand = async (req, res, next) => {
         if (!name) {
             return res.status(400).json({
                 status: 'error',
-                message: 'Name is required'
+                message: 'name is required'
             })
         }
 
@@ -260,43 +260,39 @@ exports.updateBrand = async (req, res, next) => {
 }
 
 exports.deleteUserBrand = async (req, res) => {
-
     try {
+        const { id } = req.body;
 
-        const { userName, id } = req.body;
-
-        if (!userName || !user_id) {
+        if (!id) {
             return res.status(400).json({
                 status: 'error',
                 message: 'Id is required'
-            })
+            });
         }
 
         const existingBrand = await Brand.findById(id);
-        const existingUser = await User.findById(userName);
 
         if (!existingBrand) {
-            res.status(404).json({
+            return res.status(404).json({
                 status: 'error',
                 message: 'Brand does not exist'
-            })
-        }
-
-        if (!existingUser) {
-            res.status(404).json({
-                status: 'error',
-                message: 'User does not exist'
-            })
+            });
         }
 
         await Brand.deleteOne({ _id: existingBrand._id });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Brand deleted successfully',
+        });
     } catch (err) {
-        res.status(500).json({
+        return res.status(500).json({
             status: 'error',
             message: 'Something went wrong'
-        })
+        });
     }
-}
+};
+
 
 exports.addCab = async (req, res, next) => {
 
@@ -346,9 +342,13 @@ exports.listAllCabs = async (req, res, next) => {
     try {
 
         const { page, limit = 10 } = req.body
+        console.log(page);
         const offset = (page - 1) * limit;
+        console.log(offset);
 
         const cabs = await Cab.find({}).skip(offset).limit(limit);
+        console.log(cabs);
+        
 
         res.status(200).json({
             success: true,
