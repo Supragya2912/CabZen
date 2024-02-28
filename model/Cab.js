@@ -20,7 +20,7 @@ const cabSchema = new mongoose.Schema({
     color: String,
     status: {
         type: String,
-        enum: ['booked', 'cancelled', 'active','inactive'],
+        enum: ['booked', 'active','inactive'],
         default: 'inactive'
     }
 })

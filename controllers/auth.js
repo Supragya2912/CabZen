@@ -112,6 +112,7 @@ exports.protect = async (req, res, next) => {
     try{
 
         const accessToken = req.cookies.accessToken;
+     
 
         if(!accessToken){
             return res.status(401).json({
@@ -119,9 +120,11 @@ exports.protect = async (req, res, next) => {
                 message: 'Unauthorized- Token missing'
             })
         }
+        
 
         const decoded = jwt.verify(accessToken,process.env.SECRET_KEY)
         req.user = decoded;
+    
         next();
 
     }catch (err){

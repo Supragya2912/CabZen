@@ -471,11 +471,20 @@ exports.bookedCabs = async ( req, res, next) => {
 
 exports.bookedCabByUser = async (req, res, next) => {
     try {
-        const { userId } = req.params;
+        const { userID } = req.body;
 
-        const bookings = await Booking.find({ user: userId }).populate('Cab');
 
-        if (bookings.length === 0) {
+        console.log(userID)
+
+        
+        const latestBooking = await Booking.findOne({ userID: userID })
+            .sort({ bookingDateTime: -1 })
+            .populate('cabID') 
+            .limit(1); 
+            console.log(latestBooking);
+
+
+        if (!latestBooking) {
             return res.status(404).json({
                 status: 'error',
                 message: 'User has not booked any cab',
@@ -484,18 +493,14 @@ exports.bookedCabByUser = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: 'Booked cab details fetched successfully',
-            data: bookings,
+            message: 'Latest booked cab',
+            data: latestBooking,
         });
     } catch (err) {
-        console.error('Error fetching booked cab details:', err);
+       
         res.status(500).json({
             status: 'error',
             message: 'Something went wrong',
         });
     }
 };
-
-//get issue of user
-
-

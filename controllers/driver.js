@@ -15,6 +15,10 @@ exports.getOneBooking = async (req, res, next) => {
 
     const { bookingId } = req.body;
 
+    if(!bookingId) {
+        return res.status(400).json({ message: 'Booking ID is required' });
+    }
+
     try {
         const booking = await Booking.findById(bookingId);
         if (!booking) {

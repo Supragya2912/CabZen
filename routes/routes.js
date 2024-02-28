@@ -27,20 +27,20 @@ router.post('/listAllCabs',Auth.protect, checkPermissions(["admin"]), Admin.list
 router.post('/updateCab',Auth.protect, checkPermissions(["admin"]), Admin.updateCab)
 router.post('/deleteCab', Auth.protect, checkPermissions(["admin"]),Admin.deleteCab)
 //booking api
-router.post('/getAllBooking',Auth.protect, checkPermissions(["admin"]), Admin.bookedCabs)
+router.post('/getBookedCabs',Auth.protect, checkPermissions(["admin"]), Admin.bookedCabs)
 router.post('/bookedCabUser',Auth.protect, checkPermissions(["admin"]), Admin.bookedCabByUser)
 
 
 // driver routes
-router.post('/getAllBooking', Driver.getAllBooking)
-router.post('/getOneBooking', Driver.getOneBooking)
-router.post('/cancelBooking', Driver.cancelBooking)
+router.post('/getAllBooking',Auth.protect, checkPermissions(["driver"]), Driver.getAllBooking)
+router.post('/getOneBooking', Auth.protect, checkPermissions(["driver"]),Driver.getOneBooking)
+router.post('/cancelBooking',Auth.protect, checkPermissions(["driver"]), Driver.cancelBooking)
 
 //user routes
 router.post('/getUserData',Auth.protect, checkPermissions(["user"]) ,User.getUserData)
-router.post('/bookCab',  checkPermissions(["user"]),User.bookCab)
-router.post('/cancelBooking',  checkPermissions(["user"]),User.cancelBooking)
-router.post('/history', checkPermissions(["user"]), User.getBookingHistoryByUser)
+router.post('/bookCab', Auth.protect, checkPermissions(["user"]),User.bookCab)
+router.post('/cancelBooking',Auth.protect,  checkPermissions(["user"]),User.cancelBooking)
+router.post('/history',Auth.protect, checkPermissions(["user"]), User.getBookingHistoryByUser)
 
 
 

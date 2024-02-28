@@ -33,11 +33,11 @@ exports.bookCab = async (req, res, next) => {
 
         console.log("CROSS1")
 
-        const cab = await Cab.findById(cabID);
+        const cab = await Cab.findById({_id:cabID});
 
         console.log(cab)
 
-        if (!cab || cab.status === 'booked' || cab.status === 'cancelled' || cab.status === 'inactive') {
+        if (!cab || cab.status === 'booked'  || cab.status === 'inactive') {
             return res.status(400).json({ message: 'Cab not found' })
         }
         console.log("CROSS2")
@@ -61,7 +61,8 @@ exports.bookCab = async (req, res, next) => {
         })
 
         console.log("CROSS5")
-        await cab.findByIdAndUpdate(cabID, { status: 'booked' });
+        cab.status="booked";
+        await cab.save();
 
         console.log("CROSS6")
         await booking.save();
