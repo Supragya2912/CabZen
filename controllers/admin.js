@@ -33,7 +33,7 @@ exports.addUser = async (req, res, next) => {
 
         const { fullName, email, password, userName, phone, role } = req.body;
         const existingUser = await User.findOne({ userName });
-        console.log(existingUser);
+      
 
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' })
@@ -78,7 +78,7 @@ exports.updateUser = async (req, res, next) => {
     try {
 
         const { fullName, email, userName, phone, role } = req.body;
-        console.log(fullName, email, userName, phone, role)
+     
 
         if (!userName) {
             return res.status(400).json({
@@ -342,12 +342,12 @@ exports.listAllCabs = async (req, res, next) => {
     try {
 
         const { page, limit = 10 } = req.body
-        console.log(page);
+     
         const offset = (page - 1) * limit;
-        console.log(offset);
+       
 
         const cabs = await Cab.find({}).skip(offset).limit(limit);
-        console.log(cabs);
+   
 
 
         res.status(200).json({
@@ -474,14 +474,14 @@ exports.bookedCabByUser = async (req, res, next) => {
         const { userID } = req.body;
 
 
-        console.log(userID)
+     
 
         
         const latestBooking = await Booking.findOne({ userID: userID })
             .sort({ bookingDateTime: -1 })
             .populate('cabID') 
             .limit(1); 
-            console.log(latestBooking);
+        
 
 
         if (!latestBooking) {
