@@ -155,3 +155,122 @@ exports.protect = async (req, res, next) => {
         })
     }
 }
+
+exports.forgotPassword = async (req, res, next) => {
+    
+        try {
+    
+            const { email } = req.body;
+            const user = await User.findOne({ email: email})
+
+            if (!user) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'User not found'
+                })
+            }
+
+            const resetToken = crypto.randomBytes(20).toString('hex');
+            const transporter = nodemailer.createTransport({
+                // Configure your email service provider here
+                // For example, Gmail:
+                service: 'Gmail',
+                auth: {
+                    user: 'your_email@gmail.com', // Your email address
+                    pass: 'your_password' // Your email password
+                }
+            });
+
+            const mailOptions = {
+                from: 'your_email@gmail.com',
+                to: user.email,
+                subject: 'Reset Password',
+                text: `You are receiving this email because you (or someone else) have requested the reset of the password for your account.\n\n`
+                    + `Please click on the following link, or paste this into your browser to complete the process:\n\n`
+                    + `http://${req.headers.host}/resetPassword/${resetToken}\n\n`
+                    + `If you did not request this, please ignore this email and your password will remain unchanged.\n`
+            };
+
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.error('Error sending email:', error);
+                    return res.status(500).json({
+                        status: 'error',
+                        message: 'Failed to send reset password email'
+                    });
+                }
+                console.log('Email sent: ' + info.response);
+                res.status(200).json({
+                    status: 'success',
+                    message: 'Reset password email sent'
+                });
+            });
+
+        } catch(err){
+            res.status(500).json({
+                status: 'error',
+                message: "Something went wrong !!"
+            })
+        }
+}
+
+exports.resetPassword = async (req, res, next) => {
+    try {
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+
+        
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required"
+            });
+        }
+
+       
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Passwords do not match'
+            });
+        }
+
+     
+        const userId = req.user.id; 
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'User not found'
+            });
+        }
+
+       
+        const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!passwordMatch) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Old password is incorrect'
+            });
+        }
+
+        
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        
+        user.password = hashedPassword;
+        await user.save();
+
+        
+        res.status(200).json({
+            success: true,
+            message: 'Password reset successfully'
+        });
+    } catch (err) {
+        console.error('Error resetting password:', err);
+        res.status(500).json({
+            status: 'error',
+            message: "Something went wrong"
+        });
+    }
+};
