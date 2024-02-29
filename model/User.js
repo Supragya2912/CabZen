@@ -31,6 +31,14 @@ const userSchema = mongoose.Schema({
         enum: ['admin', 'user', 'driver'],
         default: 'user',
         required: true,
+    },
+    resetPasswordOtp: {
+        type: String,
+        default: null,
+    },
+    resetPasswordExpiresAt: {
+        type: Date,
+        default: null,
     }
 })
 

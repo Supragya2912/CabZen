@@ -8,6 +8,8 @@ const User = require('../controllers/user');
 
 router.post('/registerUser', Auth.registerUser)
 router.post('/login', Auth.loginUser)
+router.post('/forgotPassword', Auth.forgotPassword)
+router.post('/resetPassword', Auth.resetPassword)
 
 //admin routes 
 
