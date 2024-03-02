@@ -9,7 +9,15 @@ exports.registerUser = async (req, res, next) => {
     try {
 
         const { fullName, email, password, userName, phone, role } = req.body;
+        console.log(fullName, email, password, role, userName, phone);
+
+        if(!userName || !email || !password || !role || !phone || !fullName){
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+     
         const existingUser = await User.findOne({ userName })
+        console.log(existingUser)
     
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' })
@@ -20,14 +28,18 @@ exports.registerUser = async (req, res, next) => {
             return res.status(400).json({ message: 'Invalid email address' });
         }
 
+        console.log("CROSS")
+
         
         const phoneRegex = /^[0-9]{10}$/;
         if (!phoneRegex.test(phone)) {
             return res.status(400).json({ message: 'Invalid phone number' });
         }
+        console.log("CROSS")
         
         const salt = await bcrypt.genSalt(10);
         const securePassword = await bcrypt.hash(password, salt);
+        console.log("CROSS3")
 
         const user = await User.create({
             fullName,
@@ -61,8 +73,9 @@ exports.loginUser = async (req, res, next) => {
     try {
 
         const { email, password } = req.body;
+
         const existing_user = await User.findOne({ email })
-       
+             
 
         if (!existing_user) {
             return res.status(400).json({
@@ -72,6 +85,7 @@ exports.loginUser = async (req, res, next) => {
         }
       
         const passwordCompare = await bcrypt.compare(password, existing_user.password);
+   
  
         if (!passwordCompare) {
             return res.status(400).json({
@@ -79,21 +93,20 @@ exports.loginUser = async (req, res, next) => {
                 message: 'Invalid credentials'
             })
         }
-      
+    
         const accessToken = jwt.sign(
             { id: existing_user._id },
             process.env.SECRET_KEY,
             { expiresIn: '24h' }
         )
-       
+
         const refreshToken = generateRefreshToken();  
         existing_user.refreshToken = refreshToken;
-        const saved_token_response = await existing_user.save();
-        console.log(saved_token_response);
+         await existing_user.save();
 
         res.cookie('accessToken',accessToken, {httpOnly: true})
         res.cookie('refreshToken',refreshToken, {httpOnly: true})
-
+       
         res.status(200).json({
             status:'success',
             message:'User logged in successfully',

@@ -15,16 +15,16 @@ app.get('/',  (req,res) => {
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use('/cabzen',require('./routes/routes'));
+
 
 app.use(
     cors({
         origin: 'http://localhost:3000',
-        method: ['GET', 'POST', 'PUT','DELETE'],
-        allowedHeaders: ['Access-Control-Allow-Origin', 'Content-Type'],
-    
+        credentials: true
     })
 )
+
+app.use('/cabzen',require('./routes/routes'));
 
 app.listen(PORT, (req, res) => {
     console.log(`Server is running on port ${PORT}`)
