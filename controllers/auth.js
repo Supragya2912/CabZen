@@ -11,14 +11,14 @@ exports.registerUser = async (req, res, next) => {
         const { fullName, email, password, userName, phone, role } = req.body;
         console.log(fullName, email, password, role, userName, phone);
 
-        if(!userName || !email || !password || !role || !phone || !fullName){
+        if (!userName || !email || !password || !role || !phone || !fullName) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-     
+
         const existingUser = await User.findOne({ userName })
         console.log(existingUser)
-    
+
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' })
         }
@@ -30,13 +30,13 @@ exports.registerUser = async (req, res, next) => {
 
         console.log("CROSS")
 
-        
+
         const phoneRegex = /^[0-9]{10}$/;
         if (!phoneRegex.test(phone)) {
             return res.status(400).json({ message: 'Invalid phone number' });
         }
         console.log("CROSS")
-        
+
         const salt = await bcrypt.genSalt(10);
         const securePassword = await bcrypt.hash(password, salt);
         console.log("CROSS3")
@@ -75,7 +75,7 @@ exports.loginUser = async (req, res, next) => {
         const { email, password } = req.body;
 
         const existing_user = await User.findOne({ email })
-             
+
 
         if (!existing_user) {
             return res.status(400).json({
@@ -83,38 +83,40 @@ exports.loginUser = async (req, res, next) => {
                 message: 'User does not exist'
             })
         }
-      
+
         const passwordCompare = await bcrypt.compare(password, existing_user.password);
-   
- 
+
+
         if (!passwordCompare) {
             return res.status(400).json({
                 status: "error",
                 message: 'Invalid credentials'
             })
         }
-    
+
         const accessToken = jwt.sign(
             { id: existing_user._id },
             process.env.SECRET_KEY,
             { expiresIn: '24h' }
         )
 
-        const refreshToken = generateRefreshToken();  
+        const refreshToken = generateRefreshToken();
         existing_user.refreshToken = refreshToken;
-         await existing_user.save();
+        await existing_user.save();
 
-        res.cookie('accessToken',accessToken, {httpOnly: true})
-        res.cookie('refreshToken',refreshToken, {httpOnly: true})
-       
+        existing_user.password = undefined;
+
+        res.cookie('accessToken', accessToken, { httpOnly: true })
+        res.cookie('refreshToken', refreshToken, { httpOnly: true })
+
         res.status(200).json({
-            status:'success',
-            message:'User logged in successfully',
+            status: 'success',
+            message: 'User logged in successfully',
             data: existing_user,
             accessToken: accessToken
         })
 
-    }catch (err) {
+    } catch (err) {
         res.status(500).json({
             status: 'error',
             message: "Something went wrong !!"
@@ -124,28 +126,28 @@ exports.loginUser = async (req, res, next) => {
 
 exports.protect = async (req, res, next) => {
 
-    try{
+    try {
 
         const accessToken = req.cookies.accessToken;
-     
 
-        if(!accessToken){
+
+        if (!accessToken) {
             return res.status(401).json({
                 status: 'error',
                 message: 'Unauthorized- Token missing'
             })
         }
-        
 
-        const decoded = jwt.verify(accessToken,process.env.SECRET_KEY)
+
+        const decoded = jwt.verify(accessToken, process.env.SECRET_KEY)
         req.user = decoded;
-    
+
         next();
 
-    }catch (err){
+    } catch (err) {
 
-        if(err instanceof jwt.TokenExpiredError){
-           
+        if (err instanceof jwt.TokenExpiredError) {
+
             const refreshToken = req.cookies.refereshToken;
             if (!refreshToken) {
                 return res.redirect('/login');
@@ -153,9 +155,6 @@ exports.protect = async (req, res, next) => {
 
             const user = await User.findOne({ refreshToken });
 
-            if (!user) {
-                return res.redirect('/login');
-            }
 
             const newAccessToken = jwt.sign({ id: user._id }, secret, { expiresIn: '1h' });
             res.cookie('accessToken', newAccessToken, { httpOnly: true });
@@ -174,9 +173,9 @@ exports.protect = async (req, res, next) => {
 exports.forgotPassword = async (req, res, next) => {
     try {
         const { email } = req.body;
-      
+
         const user = await User.findOne({ email: email });
-       
+
 
         if (!user) {
             return res.status(400).json({
@@ -185,11 +184,11 @@ exports.forgotPassword = async (req, res, next) => {
             });
         }
 
-        const otp = Math.floor(100000 + Math.random() * 900000); 
+        const otp = Math.floor(100000 + Math.random() * 900000);
         user.resetPasswordOtp = otp;
 
-        console.log("USER OTP",user.resetPasswordOtp);
-        user.resetPasswordExpiresAt = new Date(Date.now() + 5 * 60 * 1000); 
+        console.log("USER OTP", user.resetPasswordOtp);
+        user.resetPasswordExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
         await user.save();
 
         console.log("USER SAVED", user);
@@ -198,12 +197,12 @@ exports.forgotPassword = async (req, res, next) => {
         const transporter = nodemailer.createTransport({
             service: 'Gmail',
             auth: {
-                user: process.env.SENDER_MAIL, 
+                user: process.env.SENDER_MAIL,
                 pass: process.env.SENDER_PASS
             }
         });
 
-       
+
 
         const mailOptions = {
             from: 'SUPRAGYA ANAND',
@@ -228,7 +227,7 @@ exports.forgotPassword = async (req, res, next) => {
             });
         });
     } catch (err) {
-      
+
         res.status(500).json({
             status: 'error',
             message: 'Something went wrong'
@@ -252,7 +251,7 @@ exports.resetPassword = async (req, res, next) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-  
+
         user.password = hashedPassword;
         await user.save();
 
