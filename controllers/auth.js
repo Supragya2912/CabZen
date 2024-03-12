@@ -28,18 +28,16 @@ exports.registerUser = async (req, res, next) => {
             return res.status(400).json({ message: 'Invalid email address' });
         }
 
-        console.log("CROSS")
-
 
         const phoneRegex = /^[0-9]{10}$/;
         if (!phoneRegex.test(phone)) {
             return res.status(400).json({ message: 'Invalid phone number' });
         }
-        console.log("CROSS")
+    
 
         const salt = await bcrypt.genSalt(10);
         const securePassword = await bcrypt.hash(password, salt);
-        console.log("CROSS3")
+      
 
         const user = await User.create({
             fullName,
