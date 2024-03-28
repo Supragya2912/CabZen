@@ -123,51 +123,52 @@ exports.loginUser = async (req, res, next) => {
 }
 
 exports.protect = async (req, res, next) => {
-
     try {
-
-        const accessToken = req.cookies.accessToken;
-
+        const accessToken = req.headers.authorization.split(' ')[1]; 
 
         if (!accessToken) {
             return res.status(401).json({
                 status: 'error',
-                message: 'Unauthorized- Token missing'
-            })
+                message: 'Unauthorized - Token missing'
+            });
         }
 
-
-        const decoded = jwt.verify(accessToken, process.env.SECRET_KEY)
+        const decoded = jwt.verify(accessToken, process.env.SECRET_KEY);
         req.user = decoded;
 
         next();
-
     } catch (err) {
-
         if (err instanceof jwt.TokenExpiredError) {
+            const refreshToken = req.cookies.refreshToken;
 
-            const refreshToken = req.cookies.refereshToken;
-            if (!refreshToken) {
-                return res.redirect('/login');
+            try {
+                const user = await User.findOne({ refreshToken });
+
+                if (!user) {
+                    throw new Error('User not found');
+                }
+
+                const newAccessToken = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: '1h' });
+                res.cookie('accessToken', newAccessToken, { httpOnly: true });
+
+                req.user = user;
+                next();
+            } catch (error) {
+                console.error('Error refreshing access token:', error);
+                res.status(500).json({
+                    status: 'error',
+                    message: 'Failed to refresh access token'
+                });
             }
-
-            const user = await User.findOne({ refreshToken });
-
-
-            const newAccessToken = jwt.sign({ id: user._id }, secret, { expiresIn: '1h' });
-            res.cookie('accessToken', newAccessToken, { httpOnly: true });
-
-            req.user = user;
-            next();
-
+        } else {
+            console.error('Error verifying access token:', err);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to verify access token'
+            });
         }
-        res.status(500).json({
-            status: 'error',
-            message: "Something went wrong !!"
-        })
     }
-}
-
+};
 exports.forgotPassword = async (req, res, next) => {
     try {
         const { email } = req.body;
