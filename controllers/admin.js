@@ -346,9 +346,12 @@ exports.listAllCabs = async (req, res, next) => {
         const offset = (page - 1) * limit;
        
 
-        const cabs = await Cab.find({}).skip(offset).limit(limit);
-   
-
+        const cabs = await Cab.find({})
+        .populate('brand')
+        .populate('driver')
+        .skip(offset)
+        .limit(limit);
+        console.log(cabs);
 
         res.status(200).json({
             success: true,

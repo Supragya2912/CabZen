@@ -124,7 +124,10 @@ exports.loginUser = async (req, res, next) => {
 
 exports.protect = async (req, res, next) => {
     try {
+
+        console.log(req.headers);
         const accessToken = req.headers.authorization.split(' ')[1]; 
+        console.log(accessToken);
 
         if (!accessToken) {
             return res.status(401).json({
