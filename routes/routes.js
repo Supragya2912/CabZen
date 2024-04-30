@@ -1,15 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const checkPermissions  = require('../middleware/aclpermission');
-const Auth = require('../controllers/auth');
 const Admin = require('../controllers/admin');
 const Driver = require('../controllers/driver');
 const User = require('../controllers/user');
+const Auth = require('../controllers/auth');
 
-router.post('/registerUser', Auth.registerUser)
-router.post('/login', Auth.loginUser)
-router.post('/forgotPassword', Auth.forgotPassword)
-router.post('/resetPassword', Auth.resetPassword)
+
 
 //admin routes 
 

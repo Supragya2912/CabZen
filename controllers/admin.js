@@ -293,7 +293,6 @@ exports.deleteUserBrand = async (req, res) => {
     }
 };
 
-
 exports.addCab = async (req, res, next) => {
 
     try {
@@ -476,10 +475,6 @@ exports.bookedCabByUser = async (req, res, next) => {
     try {
         const { userID } = req.body;
 
-
-     
-
-        
         const latestBooking = await Booking.findOne({ userID: userID })
             .sort({ bookingDateTime: -1 })
             .populate('cabID') 

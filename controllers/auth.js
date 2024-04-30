@@ -110,7 +110,7 @@ exports.loginUser = async (req, res, next) => {
         res.status(200).json({
             status: 'success',
             message: 'User logged in successfully',
-            data: existing_user,
+            // data: existing_user,
             accessToken: accessToken
         })
 
@@ -269,3 +269,35 @@ exports.resetPassword = async (req, res, next) => {
         });
     }
 };
+
+exports.getUser = async (req, res) => {
+
+    try {
+
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'User not found'
+            });
+        }
+
+        user.password = undefined;
+        user.confirmPassword = undefined;
+        user.resetPasswordExpiresAt = undefined;
+        user.resetPasswordOtp = undefined;
+
+        res.status(200).json({
+            status: 'success',
+            data: user
+        });
+
+    } catch (err) {
+        console.error('Error getting user:', err);
+        res.status(500).json({
+            status: 'error',
+            message: 'Something went wrong'
+        });
+    }
+}

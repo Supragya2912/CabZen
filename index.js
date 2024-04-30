@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors')
 const PORT = process.env.PORT || 3000;
 
+
 connectToDB();
 app.get('/',  (req,res) => {
     res.send('Hello')
@@ -25,6 +26,7 @@ app.use(
 )
 
 app.use('/cabzen',require('./routes/routes'));
+app.use('/cabzen/auth',require('./routes/auth'));
 
 app.listen(PORT, (req, res) => {
     console.log(`Server is running on port ${PORT}`)
