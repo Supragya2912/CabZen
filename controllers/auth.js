@@ -301,3 +301,52 @@ exports.getUser = async (req, res) => {
         });
     }
 }
+
+exports.updateUser = async (req, res) => {
+    try {
+
+        const user_id = req.user._id;
+        const user = await User.findById(user_id);
+        const { name, email, phone, location } = req.body;
+
+        if (!name || !email || !phone || !address) {
+            return res.status(400).json({ message: 'Fields are empty' })
+        }
+
+        if (!user) {
+            return res.status(400).json({ message: 'User not found' })
+        }
+
+        if (phone.length !== 10) {
+            return res.status(400).json({ message: 'Phone number should be 10 digits' })
+        }
+
+        if (name) {
+            user.name = name;
+        }
+        if (email) {
+            user.email = email;
+        }
+        if (phone) {
+            user.phone = phone;
+        }
+        if (location) {
+
+            const { address, city, state, pincode } = location;
+
+            if (!city || !state || !pincode || !address) {
+                return res.send(error(400, 'All fields in the location object are required'));
+            }
+
+            user.location = location
+
+        }
+
+        await user.save();
+
+        return res.status(200).json({ message: 'User updated successfully' });
+
+    } catch (error) {
+        return res.status(500).json({ message: error.message })
+    }
+}

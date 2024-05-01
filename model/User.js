@@ -39,7 +39,21 @@ const userSchema = mongoose.Schema({
     resetPasswordExpiresAt: {
         type: Date,
         default: null,
-    }
+    },
+    location: {
+        address: {
+            type: String
+          },
+        city: {
+          type: String
+        },
+        state: {
+          type: String
+        },
+        pincode: {
+          type: String
+        },
+      }
 })
 
 module.exports = mongoose.model('User', userSchema);

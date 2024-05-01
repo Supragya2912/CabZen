@@ -20,33 +20,33 @@ exports.getUserData = async (req, res, next) => {
 
 exports.bookCab = async (req, res, next) => {
 
-    const { userID, cabID,  pickupLocation, destination, fare } = req.body;
-   
+    const { userID, cabID, pickupLocation, destination, fare } = req.body;
+
 
     try {
 
         const user = await User.findById(userID);
-        
+
         if (!user) {
             return res.status(400).json({ message: 'User not found' })
         }
 
 
-        const cab = await Cab.findById({_id:cabID});
+        const cab = await Cab.findById({ _id: cabID });
 
-       
 
-        if (!cab || cab.status === 'booked'  || cab.status === 'inactive') {
+
+        if (!cab || cab.status === 'booked' || cab.status === 'inactive') {
             return res.status(400).json({ message: 'Cab not found' })
         }
-    
 
-        if(pickupLocation === "" || destination === "" || fare === ""){
+
+        if (pickupLocation === "" || destination === "" || fare === "") {
             return res.status(400).json({ message: 'Pickup Location, Destination and Fare are required' })
         }
-    
 
-        const bookingDateTime = new Date(); 
+
+        const bookingDateTime = new Date();
 
         const booking = new Booking({
             userID,
@@ -56,18 +56,18 @@ exports.bookCab = async (req, res, next) => {
             destination,
             fare
         })
-    
-        cab.status="booked";
+
+        cab.status = "booked";
         await cab.save();
 
-    
+
         await booking.save();
-    
+
         return res.status(200).json({
             message: 'Cab booked successfully',
             data: booking
         });
-        
+
     } catch (error) {
         return res.status(500).json({ message: error.message })
     }
@@ -80,12 +80,12 @@ exports.cancelBooking = async (req, res, next) => {
 
         const booking = await Booking.findById(bookingId);
 
-   
+
         if (!booking) {
             return res.status(400).json({ message: 'Booking not found' });
         }
 
-      
+
         if (booking.userID.toString() !== userId) {
             return res.status(403).json({ message: 'Unauthorized to cancel this booking' });
         }
@@ -93,7 +93,7 @@ exports.cancelBooking = async (req, res, next) => {
 
         return res.status(200).json({ message: 'Booking cancelled successfully' });
     } catch (error) {
-   
+
         return res.status(500).json({ message: error.message });
     }
 };
@@ -126,6 +126,8 @@ exports.getBookingHistoryByUser = async (req, res) => {
         });
     }
 };
+
+
 
 //raise an issue to admin
 
