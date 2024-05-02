@@ -3,13 +3,14 @@ const User = require('../model/User');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const { stat } = require('fs');
 
 exports.registerUser = async (req, res, next) => {
 
     try {
 
         const { fullName, email, password, userName, phone, role } = req.body;
-        console.log(fullName, email, password, role, userName, phone);
+       
 
         if (!userName || !email || !password || !role || !phone || !fullName) {
             return res.status(400).json({ message: 'All fields are required' });
@@ -17,7 +18,7 @@ exports.registerUser = async (req, res, next) => {
 
 
         const existingUser = await User.findOne({ userName })
-        console.log(existingUser)
+       
 
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' })
@@ -123,11 +124,24 @@ exports.loginUser = async (req, res, next) => {
 }
 
 exports.protect = async (req, res, next) => {
+
+    if(!req.headers || !req.headers.authorization || !req.headers.authorization.startsWith("Bearer")){
+        return res.send(error(401, 'Authorization header is required'));
+    }
+    
+    const accessToken = req.headers.authorization.split(' ')[1];
+
     try {
 
-        console.log(req.headers);
-        const accessToken = req.headers.authorization.split(' ')[1]; 
-        console.log(accessToken);
+        const decoded = jwt.verify(accessToken, process.env.SECRET_KEY);
+        const user = await User.findById(decoded.id);
+
+        if (!user) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'User not found'
+            });
+        }
 
         if (!accessToken) {
             return res.status(401).json({
@@ -135,9 +149,8 @@ exports.protect = async (req, res, next) => {
                 message: 'Unauthorized - Token missing'
             });
         }
-
-        const decoded = jwt.verify(accessToken, process.env.SECRET_KEY);
-        req.user = decoded;
+        
+        req.user = user;
 
         next();
     } catch (err) {
@@ -172,6 +185,7 @@ exports.protect = async (req, res, next) => {
         }
     }
 };
+
 exports.forgotPassword = async (req, res, next) => {
     try {
         const { email } = req.body;
@@ -203,8 +217,6 @@ exports.forgotPassword = async (req, res, next) => {
                 pass: process.env.SENDER_PASS
             }
         });
-
-
 
         const mailOptions = {
             from: 'SUPRAGYA ANAND',
@@ -304,25 +316,21 @@ exports.getUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     try {
-
-        const user_id = req.user._id;
+        const user_id = req.user.id;
         const user = await User.findById(user_id);
         const { name, email, phone, location } = req.body;
 
-        if (!name || !email || !phone || !address) {
-            return res.status(400).json({ message: 'Fields are empty' })
-        }
-
+        
         if (!user) {
-            return res.status(400).json({ message: 'User not found' })
+            return res.status(400).json({ message: 'User not found' });
         }
 
-        if (phone.length !== 10) {
-            return res.status(400).json({ message: 'Phone number should be 10 digits' })
+        if (phone && phone.length !== 10) {
+            return res.status(400).json({ message: 'Phone number should be 10 digits' });
         }
 
         if (name) {
-            user.name = name;
+            user.fullName = name;
         }
         if (email) {
             user.email = email;
@@ -331,22 +339,54 @@ exports.updateUser = async (req, res) => {
             user.phone = phone;
         }
         if (location) {
-
             const { address, city, state, pincode } = location;
 
             if (!city || !state || !pincode || !address) {
-                return res.send(error(400, 'All fields in the location object are required'));
+                return res.status(400).json({ message: 'All fields in the location object are required' });
             }
 
-            user.location = location
-
+            user.location = location;
         }
 
         await user.save();
 
         return res.status(200).json({ message: 'User updated successfully' });
-
     } catch (error) {
-        return res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+exports.updatePassword = async (req, res) => {
+
+    try {
+        const user_id = req.user.id;
+        const user = await User.findById(user_id);
+
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+
+        if (!user) {
+            return res.status(400).json({ message: 'User not found' });
+        }
+
+        const passwordCompare = await bcrypt.compare(oldPassword, user.password);
+
+        if (!passwordCompare) {
+            return res.status(400).json({ message: 'Old password is incorrect' });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ message: 'Passwords do not match' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        user.password = hashedPassword;
+        await user.save();
+
+        return res.status(200).json({ status: 'success', message: 'Password updated successfully'});
+    }
+    catch (error) {
+        return res.status(500).json({ message: error.message });
     }
 }

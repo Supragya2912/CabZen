@@ -350,7 +350,6 @@ exports.listAllCabs = async (req, res, next) => {
         .populate('driver')
         .skip(offset)
         .limit(limit);
-        console.log(cabs);
 
         res.status(200).json({
             success: true,
