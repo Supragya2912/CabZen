@@ -251,7 +251,7 @@ exports.forgotPassword = async (req, res, next) => {
 
 exports.resetPassword = async (req, res, next) => {
     try {
-        const { email, newPassword } = req.body;
+        const { email ,newPassword, confirmPassword , otp } = req.body;
 
         const user = await User.findOne({ email });
 
@@ -259,6 +259,27 @@ exports.resetPassword = async (req, res, next) => {
             return res.status(400).json({
                 status: 'error',
                 message: 'User not found'
+            });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Passwords do not match'
+            });
+        }
+
+        if (user.resetPasswordOtp !== otp) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Invalid OTP'
+            });
+        }
+
+        if (user.resetPasswordExpiresAt < new Date()) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'OTP expired'
             });
         }
 

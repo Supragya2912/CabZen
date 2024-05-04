@@ -20,8 +20,8 @@ exports.getUserData = async (req, res, next) => {
 
 exports.bookCab = async (req, res, next) => {
 
-    const { userID, cabID, pickupLocation, destination, fare } = req.body;
-
+    const {  cabID, pickupLocation, destination, fare } = req.body;
+    const userID = req.user.id;
 
     try {
 
@@ -126,7 +126,6 @@ exports.getBookingHistoryByUser = async (req, res) => {
         });
     }
 };
-
 
 
 //raise an issue to admin
