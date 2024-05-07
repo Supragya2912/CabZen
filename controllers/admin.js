@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const Brand = require('../model/Brands');
 const Cab = require('../model/Cab');
 const Booking = require('../model/Booking');
+const { resetPassword } = require('./auth');
 
 exports.getAllUsers = async (req, res, next) => {
 
@@ -13,9 +14,13 @@ exports.getAllUsers = async (req, res, next) => {
 
         const users = await User.find({ role: "user" }).skip(offset).limit(limit);
 
+        users.forEach(user => {
+            user.password = undefined;
+        }
+        )
 
         res.status(200).json({
-            success: 'success',
+            status: 'success',
             message: 'User list fetched successfully',
             data: users
         })
@@ -501,3 +506,30 @@ exports.bookedCabByUser = async (req, res, next) => {
         });
     }
 };
+
+exports.getAllDrivers = async (req, res, next) => {
+
+    try {
+
+        const { page, limit = 10 } = req.body;
+        const offset = (page - 1) * limit;
+
+        const drivers = await User.find({ role: "driver" }).skip(offset).limit(limit);
+
+        drivers.forEach(driver => {
+            driver.password = undefined;
+        }
+        )
+
+        res.status(200).json({
+            status: 'success',
+            message: 'Driver list fetched successfully',
+            data: drivers
+        })
+    } catch (err) {
+        res.status(500).json({
+            status: 'error',
+            message: 'Something went wrong'
+        })
+    }
+}

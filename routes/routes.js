@@ -31,6 +31,7 @@ router.post('/bookedCabUser',Auth.protect, checkPermissions(["admin"]), Admin.bo
 
 
 // driver routes
+router.post('/getAllDrivers',Auth.protect, checkPermissions(["admin"]),Admin.getAllDrivers)
 router.post('/getAllBooking',Auth.protect, checkPermissions(["driver"]), Driver.getAllBooking)
 router.post('/getOneBooking', Auth.protect, checkPermissions(["driver"]),Driver.getOneBooking)
 router.post('/cancelBooking',Auth.protect, checkPermissions(["driver"]), Driver.cancelBooking)
