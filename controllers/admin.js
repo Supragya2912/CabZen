@@ -210,7 +210,7 @@ exports.listAllBrands = async (req, res, next) => {
         const brands = await Brand.find({}).skip(offset).limit(limit);
 
         res.status(200).json({
-            success: true,
+            status: 'success',
             message: 'Brand list fetched successfully',
             data: brands
 
@@ -357,7 +357,7 @@ exports.listAllCabs = async (req, res, next) => {
         .limit(limit);
 
         res.status(200).json({
-            success: true,
+            status: 'success',
             message: 'Cab list fetched successfully',
             data: cabs
 
