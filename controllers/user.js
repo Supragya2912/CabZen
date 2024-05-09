@@ -1,6 +1,7 @@
 const User = require('../model/User');
 const Booking = require('../model/Booking');
 const Cab = require('../model/Cab');
+const Issue = require('../model/Issue');
 
 
 exports.getUserData = async (req, res, next) => {
@@ -31,15 +32,11 @@ exports.bookCab = async (req, res, next) => {
             return res.status(400).json({ message: 'User not found' })
         }
 
-
         const cab = await Cab.findById({ _id: cabID });
-
-
 
         if (!cab || cab.status === 'booked' || cab.status === 'inactive') {
             return res.status(400).json({ message: 'Cab not found' })
         }
-
 
         if (pickupLocation === "" || destination === "" || fare === "") {
             return res.status(400).json({ message: 'Pickup Location, Destination and Fare are required' })
@@ -126,6 +123,34 @@ exports.getBookingHistoryByUser = async (req, res) => {
         });
     }
 };
+
+exports.raiseIssue = async (req, res) => {
+
+    try {
+
+        const userId = req.user.id;
+        const { email, issue } = req.body;
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(400).json({ message: 'User not found' });
+        }
+
+        const new_issue = new Issue({
+            email,
+            issue,
+            userID: userId
+        });
+
+        await new_issue.save();
+
+        return res.status(200).json({ message: 'Issue raised successfully' });
+
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+}
 
 
 //raise an issue to admin
