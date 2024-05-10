@@ -4,6 +4,7 @@ const Brand = require('../model/Brands');
 const Cab = require('../model/Cab');
 const Booking = require('../model/Booking');
 const { resetPassword } = require('./auth');
+const Issue = require('../model/Issue');
 
 exports.getAllUsers = async (req, res, next) => {
 
@@ -533,3 +534,25 @@ exports.getAllDrivers = async (req, res, next) => {
         })
     }
 }
+
+exports.getAllIssue = async (req, res, next) => {
+    
+        try {
+    
+            const { page, limit = 10 } = req.body;
+            const offset = (page - 1) * limit;
+    
+            const issues = await Issue.find({}).skip(offset).limit(limit);
+    
+            res.status(200).json({
+                status: 'success',
+                message: 'Issue list fetched successfully',
+                data: issues
+            })
+        } catch (err) {
+            res.status(500).json({
+                status: 'error',
+                message: 'Something went wrong'
+            })
+        }
+    }

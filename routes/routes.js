@@ -15,6 +15,7 @@ router.post('/getAllUsers',Auth.protect, checkPermissions(["admin"]),Admin.getAl
 router.post('/addUser',Auth.protect, checkPermissions(["admin"]), Admin.addUser)
 router.post('/updateUser',Auth.protect, checkPermissions(["admin"]), Admin.updateUser)
 router.post('/deleteUser',Auth.protect, checkPermissions(["admin"]), Admin.deleteUser)
+router.post('/create-issue', Auth.protect, checkPermissions(["user"]), User.raiseIssue)
 // brand api
 router.post('/addBrand',Auth.protect, checkPermissions(["admin"]), Admin.addBrand)
 router.post('/listAllBrands',Auth.protect, checkPermissions(["admin"]), Admin.listAllBrands)
